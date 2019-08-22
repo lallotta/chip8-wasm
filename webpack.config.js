@@ -8,7 +8,9 @@ module.exports = {
         filename: 'bundle.js',
     },
     plugins: [
-        new HtmlWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            template: "./index.html"
+        }),
         new WasmPackPlugin({
             crateDirectory: ".",
             extraArgs: "--no-typescript",
