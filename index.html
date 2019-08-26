@@ -4,9 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>chip8-wasm</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata:400,700&display=swap" rel="stylesheet">
+    <title>chip8 wasm</title>
+    <style type="text/css">
+        body {
+            background-color: black;
+            font: 1.15em 'Inconsolata', monospace;
+            color: white;
+        }
+
+        :root {
+            --green: #47a025;
+        }
+
+        main {
+            width: 512px;
+            margin: 0 auto; 
+        }
+
+        h1 {
+            text-align: center;
+            margin: 1.5em 0;
+        }
+
+        canvas {
+            transform: scale(8);
+            transform-origin: top left;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+        }
+
+        #play-pause {
+            background-color: var(--green);
+            color: white;
+            border: none;
+            padding: 1em 1.5em;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-right: 1em;
+        }
+
+        #display {
+            width: 512px;
+            height: 256px;
+            border: .25em solid white;
+        }
+
+        #container {
+            display: flex;
+            margin-bottom: 0.5em;
+            align-items: center;
+            margin-top: 2em;
+        }
+
+        #select i {
+            color: var(--green);
+            font-size: .75em;
+        }
+
+        .button {
+            padding: .3em .5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .button i {
+            margin-left: .75em;
+        }
+
+        #menu {
+            background: black;
+            z-index: 1;
+            position: absolute;
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        #menu.active {
+            display: block;
+        }
+
+        .option {
+            padding: .3em .5em;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            color: var(--green);
+        }
+
+        div.option {
+            padding-right: 2em;
+        }
+    </style>
 </head>
 <body>
-    <h1>chip8</h1>
+    <h1>CHIP8 WASM</h1>
+    
+    <main>
+        <p>The default ROM is BRIX. Press 'q' and 'e' to move the paddle.</p>
+        <div id="container">
+            <button class="button" id="play-pause">Start</button>
+            <span>ROM:</span>
+            <div>
+                <a id="select" class="button">
+                    <span id="rom" class="title">BRIX</span>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+    
+                <div id="menu"></div>
+            </div>
+        </div>
+    
+        <div id="display">
+            <canvas id="canvas" width="64" height="32"></canvas>    
+        </div>
+    </main>
 </body>
 </html>
