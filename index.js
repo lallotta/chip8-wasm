@@ -46,21 +46,21 @@ const roms = [
 ];
 
 roms.forEach(rom => {
-    const div = document.createElement('div');
+    const menu = document.getElementById('menu');
+    const option = document.createElement('div');
     
-    div.textContent = rom;
-    div.classList.add('option');
-    div.addEventListener('click', e => {
-        stop();
-        document.getElementById('menu').classList.remove('active');
+    option.textContent = rom;
+    option.classList.add('option');
+    option.addEventListener('click', e => {
+        menu.classList.remove('active');
         loadROM(e.target.textContent);
         document.getElementById('rom').textContent = e.target.textContent;        
     });
     
-    document.getElementById('menu').appendChild(div);
+    menu.appendChild(option);
 });
 
-document.getElementById('select').addEventListener('click', () => {
+document.getElementById('trigger').addEventListener('click', () => {
     document.getElementById('menu').classList.toggle('active');
 });
 
@@ -74,6 +74,7 @@ const loadROM = async rom => {
     await fetch(`./roms/${rom}`)
         .then(res => res.arrayBuffer())
         .then(buf => {
+            stop();
             chip8.reset();
             const romData = new Uint8Array(buf);
             for (let i = 0; i < romData.length; i++) {
