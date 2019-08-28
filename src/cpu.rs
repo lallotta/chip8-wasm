@@ -1,4 +1,4 @@
-use crate::display::{Display, FONT_SET};
+use crate::display::{Display, FONT_SET, WIDTH, HEIGHT};
 use crate::keypad::Keypad;
 use js_sys::Math;
 
@@ -24,7 +24,7 @@ impl Cpu {
             memory: [0; 4096],
             v: [0; 16],
             i: 0,
-            pc: 0x200,
+            pc: 0,
             stack: [0; 16],
             sp: 0,
             display: Display::new(),
@@ -37,7 +37,7 @@ impl Cpu {
 
     fn read_opcode(&self) -> u16 {
         (self.memory[self.pc as usize] as u16) << 8 |
-            (self.memory[self.pc as usize + 1] as u16)
+            self.memory[self.pc as usize + 1] as u16
     }
 
     pub fn emulate_cycle(&mut self) {
@@ -248,14 +248,14 @@ impl Cpu {
 
             for j in 0..8 {
                 if px & (0x80 >> j) != 0 {
-                    let xj = (xpos + j) % 64;
-                    let yi = (ypos + i) % 32;
+                    let xj = (xpos + j) % WIDTH;
+                    let yi = (ypos + i) % HEIGHT;
 
                     if self.display.get_pixel(xj, yi) {
                         self.v[0xF] = 1;
                     }
 
-                    self.display.gfx[xj + yi * 64] ^= 1;
+                    self.display.gfx[xj + yi * WIDTH] ^= 1;
                 }
             }
         }

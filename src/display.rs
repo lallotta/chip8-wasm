@@ -2,6 +2,9 @@ pub struct Display {
     pub gfx: [u8; 2048],
 }
 
+pub const WIDTH: usize = 64;
+pub const HEIGHT: usize = 32;
+
 impl Display {
     pub fn new() -> Display {
         Display {
@@ -10,7 +13,7 @@ impl Display {
     }
 
     pub fn get_pixel(&self, x: usize, y: usize) -> bool {
-        self.gfx[x + y * 64] != 0
+        self.gfx[x + y * WIDTH] != 0
     }
 
     pub fn clear(&mut self) {
