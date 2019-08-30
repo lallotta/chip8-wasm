@@ -1,21 +1,22 @@
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: './bootstrap.js',
     output: {
         path: __dirname + '/dist',
-        filename: 'bundle.js',
+        filename: 'bootstrap.js',
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            template: "./index.html"
-        }),
+        new CopyPlugin([
+            { from: 'roms/', to: 'roms/' },
+            'index.html'
+        ]),
         new WasmPackPlugin({
-            crateDirectory: ".",
+            crateDirectory: __dirname,
             extraArgs: "--no-typescript",
             outName: "chip8_wasm"
         })
     ],
-    mode: 'development'
+    mode: 'production'
 };
