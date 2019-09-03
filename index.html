@@ -2,8 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata:400,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css">
     <title>chip8 wasm</title>
@@ -37,7 +35,7 @@
         }
 
         button {
-            font-family: inherit;
+            font-family: 'Inconsolata', monospace;
             color: white;
             cursor: pointer;
         }
@@ -63,9 +61,8 @@
 
         .container {
             display: flex;
-            margin-bottom: 0.5em;
+            margin: 2em 0 0.5em;
             align-items: center;
-            margin-top: 2em;
             font-size: 1.2em;
         }
 
@@ -105,6 +102,23 @@
         .option:hover {
             color: var(--green);
         }
+
+        .keys {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25em;
+        }
+
+        td {
+            border: 1px solid white;
+            padding: .5em;
+        }
+
+        .arrow {
+            margin: 0 1.5em;
+            color: var(--green);
+        }
     </style>
 </head>
 <body>  
@@ -112,7 +126,7 @@
     
     <main>
         <div class="content">
-            <p>The default ROM is BRIX. Press 'q' and 'e' to move the paddle.</p>
+            <p style="margin-top: 0;">The default ROM is BRIX. Press Q/E to move the paddle. Press Start to play! Some ROMs may not work.</p>
             <div class="container">
                 <button id="play-pause">Start</button>
                 <span>ROM:</span>
@@ -128,6 +142,63 @@
         
             <div class="display">
                 <canvas id="canvas" width="64" height="32"></canvas>    
+            </div>
+
+            <p style="margin: 2em 0;">The CHIP-8 16-key hexadecimal keypad is mapped as follows:</p>
+            <div class="keys">
+                <table>
+                    <tr>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>C</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                        <td>D</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+                        <td>E</td>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                        <td>0</td>
+                        <td>B</td>
+                        <td>F</td>
+                    </tr>
+                </table>
+                <i class="fas fa-angle-double-right arrow"></i>
+                <table>
+                    <tr>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>Q</td>
+                        <td>W</td>
+                        <td>E</td>
+                        <td>R</td>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                        <td>S</td>
+                        <td>D</td>
+                        <td>F</td>
+                    </tr>
+                    <tr>
+                        <td>Z</td>
+                        <td>X</td>
+                        <td>C</td>
+                        <td>V</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </main>
