@@ -45,7 +45,7 @@ impl Cpu {
 
         let nnn = opcode & 0x0FFF;
         let kk = (opcode & 0x00FF) as u8;
-        let n = (opcode & 0x000F) as u8;
+        let n = (opcode & 0x000F) as usize;
         let x = ((opcode & 0x0F00) >> 8) as usize;
         let y = ((opcode & 0x00F0) >> 4) as usize;
 
@@ -237,13 +237,13 @@ impl Cpu {
         self.v[x] = (Math::random() * 256 as f64) as u8 & kk;
     }
 
-    fn op_dxyn(&mut self, x: usize, y: usize, n: u8) {
+    fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
         let xpos = self.v[x] as usize;
         let ypos = self.v[y] as usize;
 
         self.v[0xF] = 0;
 
-        for i in 0..n as usize {
+        for i in 0..n {
             let px = self.memory[self.i as usize + i];
 
             for j in 0..8 {
