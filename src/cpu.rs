@@ -184,19 +184,13 @@ impl Cpu {
 
     fn op_8xy4(&mut self, x: usize, y: usize) {
         let (sum, overflow) = self.v[x].overflowing_add(self.v[y]);
-        match overflow {
-            true => self.v[0xF] = 1,
-            false => self.v[0xF] = 0
-        }
+        self.v[0xF] = if overflow { 1 } else { 0 };
         self.v[x] = sum;
     }
 
     fn op_8xy5(&mut self, x: usize, y: usize) {
         let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
-        match overflow {
-            true => self.v[0xF] = 0,
-            false => self.v[0xF] = 1
-        }
+        self.v[0xF] = if overflow { 0 } else { 1 };
         self.v[x] = res;
     }
 
@@ -207,10 +201,7 @@ impl Cpu {
 
     fn op_8xy7(&mut self, x: usize, y: usize) {
         let (res, overflow) = self.v[y].overflowing_sub(self.v[x]);
-        match overflow {
-            true => self.v[0xF] = 0,
-            false => self.v[0xF] = 1
-        }
+        self.v[0xF] = if overflow { 0 } else { 1 };
         self.v[x] = res;
     }
 
@@ -250,12 +241,13 @@ impl Cpu {
                 if px & (0x80 >> j) != 0 {
                     let xj = (xpos + j) % WIDTH;
                     let yi = (ypos + i) % HEIGHT;
+                    let idx = self.display.get_index(xj, yi);
 
-                    if self.display.get_pixel(xj, yi) {
+                    if self.display.gfx[idx] == 1 {
                         self.v[0xF] = 1;
                     }
 
-                    self.display.gfx[xj + yi * WIDTH] ^= 1;
+                    self.display.gfx[idx] ^= 1;
                 }
             }
         }

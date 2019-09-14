@@ -12,8 +12,8 @@ impl Display {
         }
     }
 
-    pub fn get_pixel(&self, x: usize, y: usize) -> bool {
-        self.gfx[x + y * WIDTH] != 0
+    pub fn get_index(&self, x: usize, y: usize) -> usize {
+        y * WIDTH + x
     }
 
     pub fn clear(&mut self) {
