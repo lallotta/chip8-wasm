@@ -1,10 +1,10 @@
 pub mod cpu;
-pub mod display;
-pub mod keypad;
+mod display;
+mod keypad;
 
-use cpu::Cpu;
-use display::Display;
-use keypad::Keypad;
+use crate::cpu::Cpu;
+use crate::display::Display;
+use crate::keypad::Keypad;
 use wasm_bindgen::prelude::*;
 
 static mut CPU: Cpu = Cpu {
