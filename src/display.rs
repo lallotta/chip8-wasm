@@ -2,8 +2,8 @@ pub struct Display {
     pub gfx: [u8; 2048],
 }
 
-pub const WIDTH: usize = 64;
-pub const HEIGHT: usize = 32;
+const WIDTH: usize = 64;
+const HEIGHT: usize = 32;
 
 impl Display {
     pub fn new() -> Display {
@@ -12,8 +12,28 @@ impl Display {
         }
     }
 
-    pub fn get_index(&self, x: usize, y: usize) -> usize {
+    fn get_index(&self, x: usize, y: usize) -> usize {
         y * WIDTH + x
+    }
+
+    pub fn draw_sprite(&mut self, x: usize, y: usize, sprite: &[u8]) -> bool {
+        let mut collision = false;
+        for i in 0..sprite.len() {
+            for j in 0..8 {
+                if sprite[i] & (0x80 >> j) != 0 {
+                    let xpos = (x + j) % WIDTH;
+                    let ypos = (y + i) % HEIGHT;
+                    let idx = self.get_index(xpos, ypos);
+
+                    if self.gfx[idx] == 1 {
+                        collision = true;
+                    }
+
+                    self.gfx[idx] ^= 1;
+                }
+            }
+        }
+        collision
     }
 
     pub fn clear(&mut self) {

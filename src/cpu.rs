@@ -1,6 +1,5 @@
-use crate::display::{Display, FONT_SET, WIDTH, HEIGHT};
+use crate::display::{Display, FONT_SET};
 use crate::keypad::Keypad;
-use js_sys::Math;
 
 pub struct Cpu {
     pub memory: [u8; 4096],
@@ -93,7 +92,7 @@ impl Cpu {
             (0xF, _, 0x3, 0x3) => self.op_fx33(x),
             (0xF, _, 0x5, 0x5) => self.op_fx55(x),
             (0xF, _, 0x6, 0x5) => self.op_fx65(x),
-            _ => {}
+            _ => panic!("unknown opcode: {:#x}", opcode)
         }
 
         if self.dt > 0 {
@@ -162,8 +161,7 @@ impl Cpu {
     }
 
     fn op_7xkk(&mut self, x: usize, kk: u8) {
-        let (sum, _) = self.v[x].overflowing_add(kk);
-        self.v[x] = sum;
+        self.v[x] = self.v[x].wrapping_add(kk);
     }
 
     fn op_8xy0(&mut self, x: usize, y: usize) {
@@ -195,7 +193,7 @@ impl Cpu {
     }
 
     fn op_8xy6(&mut self, x: usize) {
-        self.v[0xF] = self.v[x] & 1u8;
+        self.v[0xF] = self.v[x] & 1;
         self.v[x] >>= 1;
     }
 
@@ -225,32 +223,16 @@ impl Cpu {
     }
 
     fn op_cxkk(&mut self, x: usize, kk: u8) {
-        self.v[x] = (Math::random() * 256 as f64) as u8 & kk;
+        self.v[x] = (js_sys::Math::random() * 256f64) as u8 & kk;
     }
 
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
         let xpos = self.v[x] as usize;
         let ypos = self.v[y] as usize;
+        let sprite = &self.memory[self.i as usize..self.i as usize + n];
 
-        self.v[0xF] = 0;
-
-        for i in 0..n {
-            let px = self.memory[self.i as usize + i];
-
-            for j in 0..8 {
-                if px & (0x80 >> j) != 0 {
-                    let xj = (xpos + j) % WIDTH;
-                    let yi = (ypos + i) % HEIGHT;
-                    let idx = self.display.get_index(xj, yi);
-
-                    if self.display.gfx[idx] == 1 {
-                        self.v[0xF] = 1;
-                    }
-
-                    self.display.gfx[idx] ^= 1;
-                }
-            }
-        }
+        let collision = self.display.draw_sprite(xpos, ypos, sprite);
+        self.v[0xF] = if collision { 1 } else { 0 };
 
         self.draw_flag = true;
     }
@@ -272,14 +254,13 @@ impl Cpu {
     }
 
     fn op_fx0a(&mut self, x: usize) {
-        self.pc -= 2;
-        
-        for (i, state) in self.keypad.keys.iter().enumerate() {
-            if *state {
-                self.v[x] = i as u8;
-                self.pc += 2;
+        for (i, pressed) in (0u8..).zip(&self.keypad.keys) {
+            if *pressed {
+                self.v[x] = i;
+                return;
             }
         }
+        self.pc -= 2;
     }
 
     fn op_fx15(&mut self, x: usize) {
@@ -305,14 +286,12 @@ impl Cpu {
     }
 
     fn op_fx55(&mut self, x: usize) {
-        for i in 0..=x {
-            self.memory[self.i as usize + i] = self.v[i];
-        }
+        let start = self.i as usize;
+        self.memory[start..=start+x].copy_from_slice(&self.v[0..=x]);
     }
 
     fn op_fx65(&mut self, x: usize) {
-        for i in 0..=x {
-            self.v[i] = self.memory[self.i as usize + i];
-        }
+        let start = self.i as usize;
+        self.v[0..=x].copy_from_slice(&self.memory[start..=start+x]);
     }
 }
