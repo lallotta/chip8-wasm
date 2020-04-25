@@ -21,67 +21,75 @@ const keys = {
 };
 
 const roms = [
-    "15PUZZLE",
-    "BLITZ",
-    "CONNECT4",
-    "HIDDEN",
-    "MERLIN",
-    "PONG",
-    "PUZZLE",
-    "TANK",
-    "TICTAC",
-    "VBRIX",
-    "WIPEOFF",
-    "BLINKY",
-    "BRIX",
-    "GUESS",
-    "INVADERS",
-    "MAZE",
-    "MISSILE",
-    "PONG2",
-    "SYZYGY",
-    "TETRIS",
-    "UFO",
-    "VERS"
+    '15PUZZLE',
+    'BLINKY',
+    'BLITZ',
+    'BRIX',
+    'CONNECT4',
+    'GUESS',
+    'HIDDEN',
+    'INVADERS',
+    'MAZE',
+    'MERLIN',
+    'MISSILE',
+    'PONG',
+    'PONG2',
+    'PUZZLE',
+    'SYZYGY',
+    'TANK',
+    'TETRIS',
+    'TICTAC',
+    'UFO',
+    'VBRIX',
+    'VERS',
+    'WIPEOFF'
 ];
 
+const menu = document.getElementById('menu');
+const romName = document.getElementById('rom');
+const btn = document.getElementById('play-pause');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
 roms.forEach(rom => {
-    const menu = document.getElementById('menu');
     const option = document.createElement('div');
     
     option.textContent = rom;
     option.classList.add('option');
     option.addEventListener('click', e => {
         menu.classList.remove('active');
+        romName.textContent = e.target.textContent;        
         loadROM(e.target.textContent);
-        document.getElementById('rom').textContent = e.target.textContent;        
     });
     
     menu.appendChild(option);
 });
 
 document.getElementById('trigger').addEventListener('click', () => {
-    document.getElementById('menu').classList.toggle('active');
+    menu.classList.toggle('active');
 });
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
+// paint canvas black
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 const loadROM = async rom => {
-    const mem = new Uint8Array(memory.buffer, chip8.get_memory(), 4096);
-    await fetch(`./roms/${rom}`)
-        .then(res => res.arrayBuffer())
+    await fetch(`roms/${rom}`)
+        .then(res => {
+            if (res.ok) {
+                return res.arrayBuffer();
+            }
+            throw new Error(`Error fetching ROM: (${res.status}) ${res.statusText}`);
+        })
         .then(buf => {
             stop();
             chip8.reset();
+            const mem = new Uint8Array(memory.buffer, chip8.get_memory(), 4096);
             const romData = new Uint8Array(buf);
             for (let i = 0; i < romData.length; i++) {
-                mem[i + 0x200] = romData[i];
+                mem[0x200 + i] = romData[i];
             }
         })
-        .catch(err => console.error(err));
+        .catch(console.error);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 };
 
@@ -89,7 +97,7 @@ const drawGfx = () => {
     const gfx = new Uint8Array(memory.buffer, chip8.get_display(), 2048);
     const imgData = ctx.createImageData(canvas.width, canvas.height);
     for (let i = 0; i < gfx.length; i++) {
-        imgData.data[i * 4 + 0] = gfx[i] ? 255 : 0;
+        imgData.data[i * 4] = gfx[i] ? 255 : 0;
         imgData.data[i * 4 + 1] = gfx[i] ? 255 : 0;
         imgData.data[i * 4 + 2] = gfx[i] ? 255 : 0;
         imgData.data[i * 4 + 3] = 255;
@@ -106,8 +114,7 @@ const renderLoop = () => {
             drawGfx();
             chip8.unset_draw_flag();
         }
-    }
-    
+    }  
     raf = requestAnimationFrame(renderLoop);
 };
 
@@ -118,16 +125,15 @@ const isRunning = () => {
 const stop = () => {
     cancelAnimationFrame(raf);
     raf = null;
-    btn.textContent = "Start";
+    btn.textContent = 'Start';
 };
 
 const start = () => {
     renderLoop();
-    btn.textContent = "Stop";
-}
+    btn.textContent = 'Stop';
+};
 
-const btn = document.getElementById('play-pause');
-btn.onclick = () => {
+const toggleEmulation = () => {
     if (isRunning()) {
         stop();
     } else {
@@ -135,13 +141,17 @@ btn.onclick = () => {
     }
 };
 
-document.addEventListener("keydown", e => {
+btn.addEventListener('click', toggleEmulation);
+
+document.addEventListener('keydown', e => {
     if (keys[e.keyCode] >= 0) {
         chip8.key_down(keys[e.keyCode]);
+    } else if (e.code === 'Enter') {
+        toggleEmulation();
     }
 });
 
-document.addEventListener("keyup", e => {
+document.addEventListener('keyup', e => {
     if (keys[e.keyCode] >= 0) {
         chip8.key_up(keys[e.keyCode]);
     }

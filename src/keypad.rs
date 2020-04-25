@@ -21,3 +21,37 @@ impl Keypad {
         self.keys[key as usize] = false;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Keypad;
+
+    #[test]
+    fn test_is_pressed() {
+        let mut keypad = Keypad::new();
+        let key = 0xF;
+        keypad.keys[key as usize] = true;
+
+        assert!(keypad.is_pressed(key));
+        assert!(!keypad.is_pressed(0));
+    }
+
+    #[test]
+    fn test_key_down() {
+        let mut keypad = Keypad::new();
+        let key = 0xF;
+        keypad.key_down(key);
+
+        assert!(keypad.keys[key as usize]);
+    }
+
+    #[test]
+    fn test_key_up() {
+        let mut keypad = Keypad::new();
+        let key = 0xF;
+        keypad.keys[key as usize] = true;
+        keypad.key_up(key);
+
+        assert!(!keypad.keys[key as usize]);
+    }
+}

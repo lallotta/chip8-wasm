@@ -12,8 +12,8 @@ impl Display {
         }
     }
 
-    fn get_index(&self, x: usize, y: usize) -> usize {
-        y * WIDTH + x
+    fn get_index(&self, row: usize, column: usize) -> usize {
+        row * WIDTH + column
     }
 
     pub fn draw_sprite(&mut self, x: usize, y: usize, sprite: &[u8]) -> bool {
@@ -21,9 +21,9 @@ impl Display {
         for i in 0..sprite.len() {
             for j in 0..8 {
                 if sprite[i] & (0x80 >> j) != 0 {
-                    let xpos = (x + j) % WIDTH;
-                    let ypos = (y + i) % HEIGHT;
-                    let idx = self.get_index(xpos, ypos);
+                    let row = (y + i) % HEIGHT;
+                    let column = (x + j) % WIDTH;
+                    let idx = self.get_index(row, column);
 
                     if self.gfx[idx] == 1 {
                         collision = true;

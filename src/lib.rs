@@ -56,14 +56,14 @@ pub fn get_display() -> *const u8 {
 #[wasm_bindgen]
 pub fn draw_pending() -> bool {
     unsafe {
-        CPU.draw_flag
+        CPU.draw_pending()
     }
 }
 
 #[wasm_bindgen]
 pub fn unset_draw_flag() {
     unsafe {
-        CPU.draw_flag = false;
+        CPU.unset_draw_flag();
     }
 }
 

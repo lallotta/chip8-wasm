@@ -5,8 +5,10 @@ pub struct Cpu {
     pub memory: [u8; 4096],
     pub v: [u8; 16],
     pub i: u16,
+    // program counter
     pub pc: u16,
     pub stack: [u16; 16],
+    // stack pointer
     pub sp: u8,
     pub display: Display,
     pub keypad: Keypad,
@@ -39,9 +41,7 @@ impl Cpu {
             self.memory[self.pc as usize + 1] as u16
     }
 
-    pub fn emulate_cycle(&mut self) {
-        let opcode = self.read_opcode();
-
+    fn execute_opcode(&mut self, opcode: u16) {
         let nnn = opcode & 0x0FFF;
         let kk = (opcode & 0x00FF) as u8;
         let n = (opcode & 0x000F) as usize;
@@ -94,13 +94,21 @@ impl Cpu {
             (0xF, _, 0x6, 0x5) => self.op_fx65(x),
             _ => panic!("unknown opcode: {:#x}", opcode)
         }
+    }
 
+    fn update_timers(&mut self) {
         if self.dt > 0 {
             self.dt -= 1;
         }
         if self.st > 0 {
             self.st -= 1;
         }
+    }
+
+    pub fn emulate_cycle(&mut self) {
+        let opcode = self.read_opcode();
+        self.execute_opcode(opcode);
+        self.update_timers();
     }
 
     pub fn reset(&mut self) {
@@ -116,6 +124,14 @@ impl Cpu {
         for i in 0..FONT_SET.len() {
             self.memory[i] = FONT_SET[i];
         }
+    }
+
+    pub fn unset_draw_flag(&mut self) {
+        self.draw_flag = false;
+    }
+
+    pub fn draw_pending(&self) -> bool {
+        self.draw_flag
     }
 
     fn op_00e0(&mut self) {
@@ -227,11 +243,11 @@ impl Cpu {
     }
 
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
-        let xpos = self.v[x] as usize;
-        let ypos = self.v[y] as usize;
+        let col = self.v[x] as usize;
+        let row = self.v[y] as usize;
         let sprite = &self.memory[self.i as usize..self.i as usize + n];
 
-        let collision = self.display.draw_sprite(xpos, ypos, sprite);
+        let collision = self.display.draw_sprite(col, row, sprite);
         self.v[0xF] = if collision { 1 } else { 0 };
 
         self.draw_flag = true;
@@ -293,5 +309,109 @@ impl Cpu {
     fn op_fx65(&mut self, x: usize) {
         let start = self.i as usize;
         self.v[0..=x].copy_from_slice(&self.memory[start..=start+x]);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Cpu;
+
+    #[test]
+    fn test_op_00e0() {
+        let mut cpu = Cpu::new();
+        cpu.display.gfx[1] = 1;
+        cpu.display.gfx[2] = 1;
+
+        cpu.execute_opcode(0x00E0);
+        assert_eq!(cpu.display.gfx[1], 0);
+        assert_eq!(cpu.display.gfx[2], 0);
+        assert!(cpu.draw_flag);
+    }
+
+    #[test]
+    fn test_op_00ee() {
+        let mut cpu = Cpu::new();
+        let addr = 0x220;
+        cpu.stack[0] = addr;
+        cpu.sp = 1;
+        cpu.pc = 0x300;
+
+        cpu.execute_opcode(0x00EE);
+        assert_eq!(cpu.pc, addr);
+        assert_eq!(cpu.sp, 0);
+    }
+
+    #[test]
+    fn test_op_1nnn() {
+        let mut cpu = Cpu::new();
+        cpu.pc = 0x220;
+
+        cpu.execute_opcode(0x1210);
+        assert_eq!(cpu.pc, 0x210);
+    }
+
+    #[test]
+    fn test_op_2nnn() {
+        let mut cpu = Cpu::new();
+        cpu.pc = 0x300;
+
+        cpu.execute_opcode(0x21AF);
+        assert_eq!(cpu.stack[0], 0x302);
+        assert_eq!(cpu.sp, 1);
+        assert_eq!(cpu.pc, 0x1AF);
+    }
+
+    #[test]
+    fn test_op_3xkk() {
+        let mut cpu = Cpu::new();
+        let pc = 0x400;
+        cpu.v[3] = 5;
+        cpu.pc = pc;
+
+        cpu.execute_opcode(0x3306);
+        assert_eq!(cpu.pc, pc + 2);
+        
+        cpu.execute_opcode(0x3305);
+        assert_eq!(cpu.pc, pc + 6);
+    }
+
+    #[test]
+    fn test_op_4xkk() {
+       let mut cpu = Cpu::new();
+        let pc = 0x400;
+        cpu.v[3] = 5;
+        cpu.pc = pc;
+
+        cpu.execute_opcode(0x4305);
+        assert_eq!(cpu.pc, pc + 2);
+        
+        cpu.execute_opcode(0x4306);
+        assert_eq!(cpu.pc, pc + 6);
+    }
+
+    #[test]
+    fn test_op_5xy0() {
+        let mut cpu = Cpu::new();
+        let pc = 0x2AF;
+        cpu.v[2] = 30;
+        cpu.v[3] = 40;
+        cpu.pc = pc;
+        
+        cpu.execute_opcode(0x5230);
+        assert_eq!(cpu.pc, pc + 2);
+
+        cpu.v[2] = 40;
+
+        cpu.execute_opcode(0x5230);
+        assert_eq!(cpu.pc, pc + 6);
+    }
+
+    #[test]
+    fn test_op_6xkk() {
+        let mut cpu = Cpu::new();
+        cpu.v[4] = 10;
+
+        cpu.execute_opcode(0x6455);
+        assert_eq!(cpu.v[4], 0x55);   
     }
 }
