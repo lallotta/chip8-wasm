@@ -3,6 +3,7 @@ pub struct Display {
 }
 
 const WIDTH: usize = 64;
+#[allow(dead_code)]
 const HEIGHT: usize = 32;
 
 impl Display {
@@ -20,16 +21,18 @@ impl Display {
         let mut collision = false;
         for i in 0..sprite.len() {
             for j in 0..8 {
-                if sprite[i] & (0x80 >> j) != 0 {
-                    let row = (y + i) % HEIGHT;
-                    let column = (x + j) % WIDTH;
+                let row = y + i;
+                let column = x + j;
+                if sprite[i] & (0x80 >> j) != 0 && row <= HEIGHT && column <= WIDTH {
                     let idx = self.get_index(row, column);
-
+                    
                     if self.gfx[idx] == 1 {
                         collision = true;
                     }
 
                     self.gfx[idx] ^= 1;
+                    // if idx < self.gfx.len() {
+                    // }
                 }
             }
         }

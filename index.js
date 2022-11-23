@@ -2,22 +2,22 @@ import * as chip8 from './pkg/chip8_wasm';
 import { memory } from './pkg/chip8_wasm_bg';
 
 const keys = {
-    49: 0x1,
-    50: 0x2,
-    51: 0x3,
-    52: 0xC,
-    81: 0x4,
-    87: 0x5,
-    69: 0x6,
-    82: 0xD,
-    65: 0x7,
-    83: 0x8,
-    68: 0x9,
-    70: 0xE,
-    90: 0xA,
-    88: 0x0,
-    67: 0xB,
-    86: 0xF
+    "Digit1": 0x1,
+    "Digit2": 0x2,
+    "Digit3": 0x3,
+    "Digit4": 0xC,
+    "KeyQ": 0x4,
+    "KeyW": 0x5,
+    "KeyE": 0x6,
+    "KeyR": 0xD,
+    "KeyA": 0x7,
+    "KeyS": 0x8,
+    "KeyD": 0x9,
+    "KeyF": 0xE,
+    "KeyZ": 0xA,
+    "KeyX": 0x0,
+    "KeyC": 0xB,
+    "KeyV": 0xF
 };
 
 const roms = [
@@ -108,13 +108,10 @@ const drawGfx = () => {
 let raf = null;
 
 const renderLoop = () => {   
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 9; i++) {
         chip8.emulate_cycle();
-        if (chip8.draw_pending()) {
-            drawGfx();
-            chip8.unset_draw_flag();
-        }
     }  
+    drawGfx();
     raf = requestAnimationFrame(renderLoop);
 };
 
@@ -144,16 +141,16 @@ const toggleEmulation = () => {
 btn.addEventListener('click', toggleEmulation);
 
 document.addEventListener('keydown', e => {
-    if (keys[e.keyCode] >= 0) {
-        chip8.key_down(keys[e.keyCode]);
+    if (keys[e.code] >= 0) {
+        chip8.key_down(keys[e.code]);
     } else if (e.code === 'Enter') {
         toggleEmulation();
     }
 });
 
 document.addEventListener('keyup', e => {
-    if (keys[e.keyCode] >= 0) {
-        chip8.key_up(keys[e.keyCode]);
+    if (keys[e.code] >= 0) {
+        chip8.key_up(keys[e.code]);
     }
 });
 
